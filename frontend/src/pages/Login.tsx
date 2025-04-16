@@ -1,109 +1,132 @@
 import { ErrorMessage, Field, Formik } from 'formik'
-import { Button } from 'primereact/button' 
-import  { useRef } from 'react' 
+import { Button } from 'primereact/button'
+import { useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import * as yup from 'yup'
 import { useLoginUserMutation } from '../provider/queries/Auth.query'
 import { toast } from 'sonner'
-import ReCAPTCHA from "react-google-recaptcha";
+import ReCAPTCHA from "react-google-recaptcha"
+import { motion } from 'framer-motion'
+
 const Login = () => {
-const [LoginUser,LoginUserResponse] = useLoginUserMutation()
-const navigate = useNavigate()
-  type User={
-    token:string,
-    email:string,
-    password:string
+  const [LoginUser, LoginUserResponse] = useLoginUserMutation()
+  const navigate = useNavigate()
+  const RecaptchaRef = useRef<any>()
+
+  type User = {
+    token: string,
+    email: string,
+    password: string
   }
 
-  //@ts-ignore
-  const RecaptchaRef = useRef<any>();
-
-  const initialValues: User={
+  const initialValues: User = {
     token: '',
     email: '',
-    password:''
+    password: ''
   }
 
-  const validationSchema =yup.object({
-    email: yup.string().email("email must be valid").required("email is required"),
-    password: yup.string().min(5,"Password must be grather than 5 characters").required("password is required"),
+  const validationSchema = yup.object({
+    email: yup.string().email("Email must be valid").required("Email is required"),
+    password: yup.string().min(5, "Password must be greater than 5 characters").required("Password is required"),
   })
 
-  const OnSubmitHandler = async(e:User,{resetForm}:any)=>{
-
+  const OnSubmitHandler = async (e: User, { resetForm }: any) => {
     try {
- 
       const { data, error }: any = await LoginUser(e)
       if (error) {
-        toast.error(error.data.message);
+        toast.error(error.data.message)
         return
-
       }
-
-      // console.log(data,error);
-
-
-      localStorage.setItem("token", data.token);
-
-
+      localStorage.setItem("token", data.token)
       resetForm()
       navigate("/")
     } catch (error: any) {
-      // toast
-      toast.error(error.message);
-
-    }finally{
-      RecaptchaRef.current.reset();
+      toast.error(error.message)
+    } finally {
+      RecaptchaRef.current.reset()
     }
   }
 
   return (
-
-    <>
-
-      <div className='min-h-screen flex items-center justify-center w-full bg-[#eee]'>
+    <div className='min-h-screen flex items-center justify-center w-full bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 animate-gradient'>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-md px-6"
+      >
         <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={OnSubmitHandler}>
           {({ values, setFieldValue, handleSubmit }) => (
-            <>
-              <form onSubmit={handleSubmit} className="w-[96%] md:w-[70%] lg:w-1/3 shadow-md rounded-md pt-10 pb-3 px-4 bg-white">
-                <div className="mb-3 py-1">
-                  <label htmlFor="email">Email</label>
-                  <Field id='email' name='email' className='w-full outline-none py-3 px-2 border-[.1px] border-zinc-400 rounded-lg' placeholder='Enter Email Address' />
-                  <ErrorMessage component={'p'} className='text-red-500 text-sm ' name='email' />
-                </div>
-                <div className="mb-3 py-1">
-                  <label htmlFor="password">Password</label>
+            <form onSubmit={handleSubmit} className="backdrop-blur-lg bg-white/90 shadow-2xl rounded-2xl p-8 space-y-6">
+              <h2 className="text-3xl font-bold text-center mb-8 text-gray-800">Welcome Back</h2>
 
-                  <Field name='password' id='password' className='w-full outline-none py-3 px-2 border-[.1px] border-zinc-400 rounded-lg' placeholder='*****' />
-                  <ErrorMessage component={'p'} className='text-red-500 text-sm ' name='password' />
+              <div className="space-y-2">
+                <label htmlFor="email" className="text-sm font-medium text-gray-700">Email</label>
+                <Field
+                  id='email'
+                  name='email'
+                  className='w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition-all duration-200 ease-in-out'
+                  placeholder='Enter your email'
+                />
+                <ErrorMessage component={'p'} className='text-red-500 text-sm mt-1' name='email' />
+              </div>
 
-                </div>
-                <div className="mb-3 py-1">
-                  <ReCAPTCHA
-                    ref={RecaptchaRef}
-                    sitekey={import.meta.env.VITE_SITE_KEY}
-                    onChange={(e) => { setFieldValue('token',e)}}
-                  />
-                </div>
-                <div className="mb-3 py-1 flex items-center justify-center">
-                  <Button disabled={!values.token} loading={LoginUserResponse.isLoading} className='w-full bg-red-500 text-white py-3 px-2 flex items-center justify-center'>Submit
+              <div className="space-y-2">
+                <label htmlFor="password" className="text-sm font-medium text-gray-700">Password</label>
+                <Field
+                  name='password'
+                  type='password'
+                  id='password'
+                  className='w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition-all duration-200 ease-in-out'
+                  placeholder='••••••••'
+                />
+                <ErrorMessage component={'p'} className='text-red-500 text-sm mt-1' name='password' />
+              </div>
 
-                  </Button>
-                </div>
-                <div className="mb-3 py-1 flex items-center justify-end">
-                  <p className="inline-flex items-center gap-x-1">   Don't Have An Account?<Link className='font-semibold' to={'/register'}>Register</Link></p>
-                </div>
-                <div className="mb-3 py-1 flex items-center justify-end">
-                  <p className="inline-flex items-center gap-x-1">   Forget<Link className='font-semibold' to={'#'}>Password ?</Link></p>
-                </div>
-              </form>
-            </>
+              <div className="flex justify-center">
+                <ReCAPTCHA
+                  ref={RecaptchaRef}
+                  sitekey={import.meta.env.VITE_SITE_KEY}
+                  onChange={(e) => { setFieldValue('token', e) }}
+                  theme="light"
+                  className="transform scale-90 md:scale-100"
+                />
+              </div>
+
+              <motion.div
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+              >
+                <Button
+                  disabled={!values.token}
+                  loading={LoginUserResponse.isLoading}
+                  className={`w-full py-3 px-4 rounded-lg font-medium text-white transition-all duration-200 ease-in-out
+                    ${!values.token 
+                      ? 'bg-gray-400 cursor-not-allowed' 
+                      : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg hover:shadow-xl'
+                    }`}
+                >
+                  Sign In
+                </Button>
+              </motion.div>
+
+              <div className="space-y-4 text-center">
+                <p className="text-gray-600">
+                  Don't have an account?{' '}
+                  <Link to="/register" className="text-purple-600 hover:text-purple-700 font-medium transition-colors duration-200">
+                    Create Account
+                  </Link>
+                </p>
+                
+                <Link to="#" className="block text-purple-600 hover:text-purple-700 font-medium transition-colors duration-200">
+                  Forgot Password?
+                </Link>
+              </div>
+            </form>
           )}
         </Formik>
-      </div>
-    
-    </>
-
+      </motion.div>
+    </div>
   )
 }
 

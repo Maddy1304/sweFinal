@@ -1,8 +1,18 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+import { createApi } from '@reduxjs/toolkit/query/react'
+import { fetchBaseQuery } from '@reduxjs/toolkit/query'
 
 export const AuthApi = createApi({
     reducerPath: 'AuthApi',
-    baseQuery: fetchBaseQuery({ baseUrl: import.meta.env.VITE_BACKEND_URL }),
+    baseQuery: fetchBaseQuery({ 
+        baseUrl: import.meta.env.VITE_BACKEND_URL,
+        prepareHeaders: (headers) => {
+            const token = localStorage.getItem('token')
+            if (token) {
+                headers.set('Authorization', `Bearer ${token}`)
+            }
+            return headers
+        }
+    }),
     endpoints: (builder) => ({
         registerUser: builder.mutation<any,any>({
             query: (obj) => ({
@@ -21,5 +31,4 @@ export const AuthApi = createApi({
     }),
 })
 
-
-export const { useRegisterUserMutation,useLoginUserMutation } = AuthApi
+export const { useRegisterUserMutation, useLoginUserMutation } = AuthApi

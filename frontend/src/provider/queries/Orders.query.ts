@@ -1,29 +1,33 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+import { createApi } from '@reduxjs/toolkit/query/react'
+import { fetchBaseQuery } from '@reduxjs/toolkit/query'
 
 export const OrdersApi = createApi({
     reducerPath: 'OrdersApi',
-    baseQuery: fetchBaseQuery({ baseUrl: import.meta.env.VITE_BACKEND_URL }),
+    baseQuery: fetchBaseQuery({ 
+        baseUrl: import.meta.env.VITE_BACKEND_URL,
+        prepareHeaders: (headers) => {
+            const token = localStorage.getItem('token')
+            if (token) {
+                headers.set('Authorization', `Bearer ${token}`)
+            }
+            return headers
+        }
+    }),
     tagTypes: ['getAllOrders'],
     endpoints: (builder) => ({
         CreateOrder: builder.mutation<any, any>({
             query: (obj) => ({
                 url: '/orders/create-order',
                 method: 'POST',
-                body: obj,
-                 headers: {
-                    'Authorization': 'Bearer ' + localStorage.getItem("token")
-                }
+                body: obj
             }),
-            invalidatesTags:['getAllOrders']
+            invalidatesTags: ['getAllOrders']
         }),
 
         getAllOrders: builder.query<any, any>({
             query: (obj) => ({
                 url: `/orders/get-orders?query=${obj.query}&page=${obj.page}`,
-                method: 'GET',
-                headers: {
-                    'Authorization': 'Bearer ' + localStorage.getItem("token")
-                }
+                method: 'GET'
             }),
             providesTags: ['getAllOrders']
         }),
@@ -31,27 +35,23 @@ export const OrdersApi = createApi({
         DeleteOrder: builder.mutation<any, any>({
             query: (obj) => ({
                 url: `/orders/delete/${obj}`,
-                method: 'DELETE',
-                headers: {
-                    'Authorization': 'Bearer ' + localStorage.getItem("token")
-                }
-            }), 
+                method: 'DELETE'
+            }),
             invalidatesTags: ['getAllOrders']
         }),
+
         getInvoiceById: builder.query<any, any>({
             query: (obj) => ({
                 url: `/orders/get-invoice/${obj}`,
-                method: 'GET',
-                headers: {
-                    'Authorization': 'Bearer ' + localStorage.getItem("token")
-                }
-            }),
-        }),
-
-        
-         
+                method: 'GET'
+            })
+        })
     }),
 })
 
-
-export const { useCreateOrderMutation,useGetAllOrdersQuery , useDeleteOrderMutation ,useGetInvoiceByIdQuery} = OrdersApi
+export const { 
+    useCreateOrderMutation,
+    useGetAllOrdersQuery,
+    useDeleteOrderMutation,
+    useGetInvoiceByIdQuery
+} = OrdersApi

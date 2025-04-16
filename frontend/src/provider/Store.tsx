@@ -7,15 +7,26 @@ import { UserApi } from "./queries/Users.query";
 import { OrdersApi } from "./queries/Orders.query";
 
 export const store = configureStore({
-    reducer:{
+    reducer: {
         [UserSlice.name]: UserSlice.reducer,
         [SidebarSlice.name]: SidebarSlice.reducer,
         [AuthApi.reducerPath]: AuthApi.reducer,
         [UserApi.reducerPath]: UserApi.reducer,
         [OrdersApi.reducerPath]: OrdersApi.reducer
     },
+    middleware: (getDefaultMiddleware) =>
+        getDefaultMiddleware({
+            serializableCheck: false,
+            immutableCheck: false,
+        }).concat([
+            AuthApi.middleware,
+            UserApi.middleware,
+            OrdersApi.middleware
+        ])
+});
 
-    middleware: (d) => d().concat(AuthApi.middleware, UserApi.middleware, OrdersApi.middleware)
-}) 
+setupListeners(store.dispatch);
 
-setupListeners(store.dispatch)
+// Infer the `RootState` and `AppDispatch` types from the store itself
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
