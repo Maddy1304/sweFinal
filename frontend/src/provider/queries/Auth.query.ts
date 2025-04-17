@@ -4,7 +4,7 @@ import { fetchBaseQuery } from '@reduxjs/toolkit/query'
 export const AuthApi = createApi({
     reducerPath: 'AuthApi',
     baseQuery: fetchBaseQuery({ 
-        baseUrl: import.meta.env.VITE_BACKEND_URL,
+        baseUrl: `${import.meta.env.VITE_BACKEND_URL}/api/v1`,
         prepareHeaders: (headers) => {
             const token = localStorage.getItem('token')
             if (token) {
